@@ -16,14 +16,18 @@ namespace IdleCases
         const string Cluster = "https://usage360.kusto.windows.net";
         const string Database = "Product360";
 
-        public List<KustoResponseModel> GetData(List<string> engineerNames)
+        public List<KustoResponseModel> GetData(string engineerNames)
         {
-            IEnumerable<KustoResponseModel> responseModels = new List<KustoResponseModel>();   
+            List<KustoResponseModel> responseModels = new List<KustoResponseModel>();
+
+
+
+            string bearerToken = "";
 
             var kcsb = new KustoConnectionStringBuilder(Cluster, Database)
             {
-                FederatedSecurity = true,
-            };
+                FederatedSecurity = true
+            }.WithAadApplicationTokenAuthentication(bearerToken);
 
             using (var queryProvider = KustoClientFactory.CreateCslQueryProvider(kcsb))
             {
@@ -33,8 +37,16 @@ namespace IdleCases
                 var clientRequestProperties = new ClientRequestProperties() { ClientRequestId = Guid.NewGuid().ToString() };
                 using (var reader = queryProvider.ExecuteQuery(query, clientRequestProperties))
                 {
-                   //trying to conver response diretly into model
-                   responseModels = reader.ToEnumerable<KustoResponseModel>();                
+                    //trying to conver response diretly into model
+                    //responseModels = reader.ToEnumerable<KustoResponseModel>();  
+                    while (reader.Read())
+                    {
+                        KustoResponseModel responseModel = new KustoResponseModel();
+                        responseModel.IncidentId = reader.GetString(0);
+                        responseModel.ModifiedDateTime = reader.GetDateTime(1);
+                        responseModel.AgentAlias = reader.GetString(2);
+                        responseModels.Add(responseModel);
+                    }             
                 }
             }
             return responseModels.ToList();

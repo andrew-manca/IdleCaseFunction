@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using SendGrid.Helpers.Mail;
 using System.Collections;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace IdleCases
 {
@@ -16,7 +17,7 @@ namespace IdleCases
     {
         [FunctionName("IdleCases")]
         
-        public void Run([TimerTrigger("%timerSchedule%")]TimerInfo myTimer, 
+        public async void Run([TimerTrigger("%timerSchedule%")]TimerInfo myTimer, 
                         [Blob("casemonitoring/EngineerList.txt", FileAccess.Read)] string myBlob, ILogger log,
                         [SendGrid(ApiKey = "SendGridApiKey")] ICollector<SendGridMessage> messageCollector)
         {
@@ -28,7 +29,8 @@ namespace IdleCases
             EmailUsers email = new EmailUsers();
             List<KustoResponseModel> idleCases = new List<KustoResponseModel>();
             string[] engineerAlias = myBlob.Split(',');
-            log.LogInformation("Logging out the cases we return " + engineerAlias[0]);
+            KustoConnection kustoConn = new KustoConnection();
+            idleCases = await kustoConn.GetData(myBlob);
             //hard coding for test
 
             KustoResponseModel test = new KustoResponseModel
