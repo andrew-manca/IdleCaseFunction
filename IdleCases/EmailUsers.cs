@@ -22,7 +22,7 @@ namespace IdleCases
                     PlainTextContent = $"Hi, please review the following case {customerCase.IncidentId} as it is showing as idle.  The last modified time was {customerCase.ModifiedDateTime}",
                 };
                 //Hard coding this for testing purposes.
-                message.AddTo(new EmailAddress("anmanca@microsoft.com", "Andrew Manca"));
+                message.AddTo(new EmailAddress($"({customerCase.AgentAlias}@microsoft.com", $"{customerCase.AgentAlias}"));
                 message.AddCcs(new List<EmailAddress>
               {
                    new EmailAddress("anmanca@microsoft.com", "Andrew Manca"),
